@@ -14,8 +14,18 @@ Currently this repositiory contains the parts required to build configure and ca
 
 JamLab-NG relies on [nexmon](https://github.com/seemoo-lab/nexmon) to work on the Raspberry Pi 3 Model B. To get started follow the [guide](https://github.com/seemoo-lab/nexmon#build-patches-for-bcm43430a1-on-the-rpi3zero-w-or-bcm434355c0-on-the-rpi3-using-raspbian-recommended).
 
+### Kernel Module with Confiture Scheduler
+
 Clone this repository into ```patches/bcm43430a1/7_45_41_46/``` (as jamlabng next to the existing nexmon folder)  
 Run ```make install-firmware``` and you now have a working version of JamlabNG installed on the RPI3.
+
+### Confiture App
+
+The version included does not rely on libnexutil but instead simply calls the existing nexutil binary in ```/usr/bin/```. Use the included makefile to build the executable.
+
+### Jelly Tool
+
+Jelly is build around Scapy and will be released soon!
 
 ### Gotchas
 Keep in mind that libisl needs to be build first.  
