@@ -1,0 +1,1 @@
+cmd_/home/pi/nexmon/patches/bcm43430a1/7_45_41_46/jamlabng/brcmfmac_4.14.y-nexmon/built-in.o :=  rm -f /home/pi/nexmon/patches/bcm43430a1/7_45_41_46/jamlabng/brcmfmac_4.14.y-nexmon/built-in.o; ar rcSTPD /home/pi/nexmon/patches/bcm43430a1/7_45_41_46/jamlabng/brcmfmac_4.14.y-nexmon/built-in.o
