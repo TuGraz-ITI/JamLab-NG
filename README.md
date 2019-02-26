@@ -8,7 +8,7 @@ A scientific paper about D-Cube was published at the 16th International Conferen
 
 ## Details
 
-Currently this repositiory contains the parts required to build confiture and can be used with [Scapy](https://scapy.net/) as is. Jelly, our wrapper for parsing the CSV files for use with Scapy will be added soon.
+Currently this repositiory contains the parts required to build confiture and can be used with [Scapy](https://scapy.net/) as is. Jelly, our wrapper for parsing is tested against the Rasperry Pi with JamLab-NG's confiture.
 
 ## Instructions
 
@@ -34,4 +34,4 @@ Keep in mind, that libisl needs to be build first.
 Do not forget to first build the build tools and extract parts (ucode, flashpatches) from the current firmware by running ```make``` in the root of nexmon.  
 When sourcing setup_env.sh as user, keep in mind that later operations requiring root will need to be run with ```sudo -E make xxx```. To avoid this you can source as root user (keep in mind, this is not very safe).  
 Do not forget to install nexutil from utilities/nexutil/!
-
+For Scapy/Jelly the card needs to be but into monitor mode first by running ```sudo nexutil -m1```.
