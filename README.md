@@ -4,20 +4,20 @@ JamLab-NG is a tool for evaluating the performance of low-power wireless protoco
 This tool has been used to set-up the EWSN 2019 dependability competition.
 * [EWSN 2019 Dependability Competition (Beijing, China)](http://ewsn2019.thss.tsinghua.edu.cn/competition-scenario.html)
 
-A scientific paper about D-Cube was published at the 16th International Conference on Embedded Wireless Systems and Networks (EWSN), and will available [here](http://www.carloalbertoboano.com/documents/schuss19jamlab-ng.pdf).
+A scientific paper about D-Cube was published at the 16th International Conference on Embedded Wireless Systems and Networks (EWSN), and is available [here](http://www.carloalbertoboano.com/documents/schuss19jamlab-ng.pdf).
 
 ## Details
 
-Currently this repositiory contains the parts required to build configure and can be used with [Scapy](https://scapy.net/) as is. Jelly, our wrapper for parsing the CSV files will be added soon.
+Currently this repositiory contains the parts required to build confiture and can be used with [Scapy](https://scapy.net/) as is. Jelly, our wrapper for parsing the CSV files for use with Scapy will be added soon.
 
 ## Instructions
 
-JamLab-NG relies on [nexmon](https://github.com/seemoo-lab/nexmon) to work on the Raspberry Pi 3 Model B. To get started follow the [guide](https://github.com/seemoo-lab/nexmon#build-patches-for-bcm43430a1-on-the-rpi3zero-w-or-bcm434355c0-on-the-rpi3-using-raspbian-recommended).
+JamLab-NG's confiture relies on [nexmon](https://github.com/seemoo-lab/nexmon) to work on the Raspberry Pi. To get started follow the [guide](https://github.com/seemoo-lab/nexmon#build-patches-for-bcm43430a1-on-the-rpi3zero-w-or-bcm434355c0-on-the-rpi3-using-raspbian-recommended).
 
 ### Kernel Module with Confiture Scheduler
 
-Clone this repository into ```patches/bcm43430a1/7_45_41_46/``` (as jamlabng next to the existing nexmon folder)  
-Run ```make install-firmware``` and you now have a working version of JamlabNG installed on the RPI3.
+Clone this repository into ```patches/bcm43430a1/7_45_41_46/``` (next to the existing nexmon folder)  
+After running ```make install-firmware``` from this repository, you should have a working version of JamlabNG installed on the RPI3 (you can use ```dmesg``` to check).
 
 ### Confiture App
 
@@ -25,11 +25,11 @@ The version included does not rely on libnexutil but instead simply calls the ex
 
 ### Jelly Tool
 
-Jelly is build around Scapy and will be released soon!
+Jelly is build around Scapy and will be released soon! To get started with Scapy as is, follow the guide to put your Wi-Fi card into [monitor mode](https://github.com/seemoo-lab/nexmon/tree/master/#using-the-monitor-mode-patch-1).
 
 ### Gotchas
-Keep in mind that libisl needs to be build first.  
-Do not forget to first build the build tools, ucode, flashpatches etc by running make in the root of nexmon.  
+Keep in mind, that libisl needs to be build first.  
+Do not forget to first build the build tools and extract parts (ucode, flashpatches) from the current firmware by running ```make``` in the root of nexmon.  
 When sourcing setup_env.sh as user, keep in mind that later operations requiring root will need to be run with ```sudo -E make xxx```. To avoid this you can source as root user (keep in mind, this is not very safe).  
 Do not forget to install nexutil from utilities/nexutil/!
 
