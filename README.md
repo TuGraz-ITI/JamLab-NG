@@ -8,7 +8,7 @@ A scientific paper about D-Cube was published at the 16th International Conferen
 
 ## Details
 
-Currently this repositiory contains the parts required to build confiture and can be used with [Scapy](https://scapy.net/) as is. Jelly, our wrapper for parsing is tested against the Rasperry Pi with JamLab-NG's confiture.
+Currently, this repositiory contains the parts required to build confiture and can be used with [Scapy](https://scapy.net/) as is. Jelly is tested against the Rasperry Pi with JamLab-NG's confiture to support sending without CCA, arbitrary channels and tx power.
 
 ## Instructions
 
