@@ -334,7 +334,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
     case 0x713:
       {
         unsigned int tmp_speed=transmission_speed;
-        printf("setting transmission speed...\n",channel);
+        printf("setting transmission speed...\n");
         if (arg != 0) {
           tmp_speed = *((unsigned int*)arg);
         } else {
@@ -446,7 +446,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new power out of range (0-1500)mW...\n");
+//            printf("new power out of range (0-1500)mW...\n");
         }
         ret = IOCTL_SUCCESS;
       }
@@ -469,7 +469,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new power out of range (0-127)db...\n");
+//            printf("new power out of range (0-127)db...\n");
         }
         ret = IOCTL_SUCCESS;
       }
@@ -490,7 +490,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new interval out of range (1-10000)ms...\n");
+//            printf("new interval out of range (1-10000)ms...\n");
         }
         reset_deaf(wlc);
         ret = IOCTL_SUCCESS;
@@ -512,7 +512,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new packet length out of range (%d-%d) bytes...\n",MIN_JAM_PACK,MAX_JAM_PACK);
+//            printf("new packet length out of range (%d-%d) bytes...\n",MIN_JAM_PACK,MAX_JAM_PACK);
         }
         reset_deaf(wlc);
         ret = IOCTL_SUCCESS;
@@ -534,7 +534,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new interval out of range (1-100000)ms...\n");
+//            printf("new interval out of range (1-100000)ms...\n");
         }
         reset_deaf(wlc);
         ret = IOCTL_SUCCESS;
@@ -556,7 +556,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new packet count out of range (%d-%d)...\n",MIN_JAM_COUNT,MAX_JAM_COUNT);
+//            printf("new packet count out of range (%d-%d)...\n",MIN_JAM_COUNT,MAX_JAM_COUNT);
         }
         reset_deaf(wlc);
         ret = IOCTL_SUCCESS;
@@ -578,7 +578,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new interval out of range (0-5000)us...\n");
+//            printf("new interval out of range (0-5000)us...\n");
         }
         reset_deaf(wlc);
         ret = IOCTL_SUCCESS;
@@ -645,7 +645,7 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
         }
         else
         {
-            printf("new hw interval out of range (1-1000000)us...\n");
+//            printf("new hw interval out of range (1-1000000)us...\n");
         }
         reset_deaf(wlc);
         ret = IOCTL_SUCCESS;

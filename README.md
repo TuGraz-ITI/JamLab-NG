@@ -25,7 +25,9 @@ The version included does not rely on libnexutil but instead simply calls the ex
 
 ### Jelly Tool
 
-Jelly is build around Scapy and will be released soon! To get started with Scapy as is, follow the guide to put your Wi-Fi card into [monitor mode](https://github.com/seemoo-lab/nexmon/tree/master/#using-the-monitor-mode-patch-1).
+Jelly is build around Scapy, so it needs to be installed first. To do so simply run ```pip install scapy```! To get started with Scapy as is, follow the guide to put your Wi-Fi card into [monitor mode](https://github.com/seemoo-lab/nexmon/tree/master/#using-the-monitor-mode-patch-1).
+To put the wlan0 directly into monitor mode, run ```sudo nexutil -m1```. Jelly assumes that wlan0 is the interface in monitor mode.
+
 
 ### Gotchas
 Keep in mind, that libisl needs to be build first.  

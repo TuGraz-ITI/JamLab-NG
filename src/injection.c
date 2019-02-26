@@ -42,11 +42,16 @@
 #include <ieee80211_radiotap.h>
 #include <sendframe.h>
 #include "d11.h"
-#include "brcm.h"
+//#include "brcm.h"
+#include <channels.h>
+
+int txpower=-1;
 
 int
 inject_frame(struct wl_info *wl, sk_buff *p) {
     int rtap_len = 0;
+    unsigned int channel,local_chanspec;
+    unsigned int power;
 
     //needed for sending:
     struct wlc_info *wlc = wl->wlc;
@@ -72,8 +77,18 @@ inject_frame(struct wl_info *wl, sk_buff *p) {
                 data_rate = (*iterator.this_arg);
                 break;
             case IEEE80211_RADIOTAP_CHANNEL:
-                //printf("Channel (freq): %d\n", iterator.this_arg[0] | (iterator.this_arg[1] << 8) );
+	        channel = iterator.this_arg[0] | (iterator.this_arg[1] << 8);
+		local_chanspec = CH20MHZ_CHSPEC(channel);
+  		wlc_iovar_op(wlc, "chanspec", 0, 0, &local_chanspec, 4, 1, 0);
                 break;
+            case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
+		power=(256-(*iterator.this_arg));
+		if(power!=txpower){
+			txpower=power;
+			power=bcm_mw_to_qdbm(txpower);
+  			wlc_iovar_op(wlc, "qtxpower", 0, 0, &power, 4, 1, 0);
+		}
+		break;
             default:
                 //printf("default: %d\n", iterator.this_arg_index);
                 break;
