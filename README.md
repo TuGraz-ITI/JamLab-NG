@@ -4,7 +4,7 @@ JamLab-NG is a tool for evaluating the performance of low-power wireless protoco
 This tool has been used to set-up the EWSN 2019 dependability competition.
 * [EWSN 2019 Dependability Competition (Beijing, China)](http://ewsn2019.thss.tsinghua.edu.cn/competition-scenario.html)
 
-A scientific paper about D-Cube was published at the 16th International Conference on Embedded Wireless Systems and Networks (EWSN), and will available soon.
+A scientific paper about D-Cube was published at the 16th International Conference on Embedded Wireless Systems and Networks (EWSN), and will available [here](http://www.carloalbertoboano.com/documents/schuss19jamlab-ng.pdf).
 
 ## Details
 
