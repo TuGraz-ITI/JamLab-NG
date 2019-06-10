@@ -216,7 +216,8 @@ char *itoa(long i, char* s, int dummy_radix) {
 }
 
 void setup_jamming(){
-    char* argv[]={"nexutil", "-s0x713", "-i", "-v", "0",NULL};
+  // zhitao: set rate = N * 500 kbps (e.g. 108 for 54 Mbps)
+    char* argv[]={"nexutil", "-s0x713", "-i", "-v", "12",NULL};
     exec_nexutil(argv);
 }
 
@@ -248,6 +249,8 @@ void update_jamming(jampattern_t p){
     }
     itoa(channel,buf,10); 
     char* argv4[]={"nexutil","-s0x702", "-i", "-v", buf,NULL};
+    // zhitao: 0x712 setting channel to 40 MHz does not have effect
+    /* char* argv4[]={"nexutil","-s0x712", "-i", "-v", buf,NULL}; */
     exec_nexutil(argv4);
 
     char* argv5[]={"nexutil","-s0x701", "-i", "-v", buf,NULL};
