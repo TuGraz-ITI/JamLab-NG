@@ -37,17 +37,17 @@ int get_mychannel(){
   int ret=14;
   int ip[4];
 
-  if (getifaddrs(&ifaddr) == -1) 
+  if (getifaddrs(&ifaddr) == -1)
     {
       perror("getifaddrs");
       exit(EXIT_FAILURE);
     }
 
 
-  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) 
+  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
     {
       if (ifa->ifa_addr == NULL)
-        continue;  
+        continue;
 
       s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
@@ -59,7 +59,7 @@ int get_mychannel(){
               exit(EXIT_FAILURE);
             }
           printf("Interface:\t<%s>\n",ifa->ifa_name );
-          printf("Address:\t<%s>\n", host); 
+          printf("Address:\t<%s>\n", host);
           sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
           ret=(ip[3]%14)+1;
           printf("Channel:\t<%d>\n",ret);
@@ -70,11 +70,11 @@ int get_mychannel(){
   return ret;
 }
 
-static struct argp_option options[] = { 
+static struct argp_option options[] = {
   { "sync", 's', NULL, 0, "Enable synchronisation to the node reset."},
   { "relative", 'r', NULL, 0, "Relative channel offset."},
   { "loop", 'l', NULL, 0, "Loops pattern at the end."},
-  { 0 } 
+  { 0 }
 };
 
 struct arguments {
@@ -92,14 +92,14 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   case 'r': arguments->relative = true; break;
   case ARGP_KEY_NO_ARGS:
     argp_usage (state);
-  case ARGP_KEY_ARG: 
+  case ARGP_KEY_ARG:
     //return 0;
     arguments->input = arg;
     //arguments->strings = &state->argv[state->next];
     state->next = state->argc;
     break;
   default: return ARGP_ERR_UNKNOWN;
-  }   
+  }
   return 0;
 }
 
@@ -199,7 +199,7 @@ int timespec2str(char *buf, uint len, struct timespec *ts) {
 void exec_nexutil(char** argv){
   pid_t pid=fork();
   if(pid==0){
-    int fd=open( "/dev/null", O_WRONLY ); 
+    int fd=open( "/dev/null", O_WRONLY );
     dup2(fd,1);
     dup2(fd,2);
     execv("/usr/bin/nexutil",argv);
@@ -207,7 +207,7 @@ void exec_nexutil(char** argv){
   } else {
     waitpid(pid,0,0);
   }
-  return; 
+  return;
 }
 
 char *itoa(long i, char* s, int dummy_radix) {
@@ -229,15 +229,15 @@ void update_jamming(jampattern_t p){
     exec_nexutil(argv2);
     return;
   }
-  itoa(p.power,buf,10);	    
+  itoa(p.power,buf,10);
   char* argv2[]={"nexutil","-s0x704", "-i", "-v", buf,NULL};
   exec_nexutil(argv2);
 
-  itoa(p.periode,buf,10);	    
+  itoa(p.periode,buf,10);
   char* argv1[]={"nexutil","-s0x706", "-i", "-v", buf,NULL};
   exec_nexutil(argv1);
 
-  itoa(p.length,buf,10);	    
+  itoa(p.length,buf,10);
   char* argv3[]={"nexutil","-s0x707", "-i", "-v", buf,NULL};
   exec_nexutil(argv3);
 
@@ -247,7 +247,7 @@ void update_jamming(jampattern_t p){
     if(channel>14)
       channel=(channel%14)+1;
   }
-  itoa(channel,buf,10); 
+  itoa(channel,buf,10);
   char* argv4[]={"nexutil","-s0x702", "-i", "-v", buf,NULL};
   // zhitao: 0x712 setting channel to 40 MHz does not have effect
   /* char* argv4[]={"nexutil","-s0x712", "-i", "-v", buf,NULL}; */
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
 
   // Set up gpi pointer for direct register access
   setup_io();
-    
+
   struct sigaction action;
   memset(&action, 0, sizeof(struct sigaction));
   action.sa_handler = term;
