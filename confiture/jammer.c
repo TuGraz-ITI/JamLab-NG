@@ -74,6 +74,7 @@ static struct argp_option options[] = {
   { "sync", 's', NULL, 0, "Enable synchronisation to the node reset."},
   { "relative", 'r', NULL, 0, "Relative channel offset."},
   { "loop", 'l', NULL, 0, "Loops pattern at the end."},
+  { "rate", 'R', "value", 0, "Rate in multiple of 500 kbps."},
   { 0 }
 };
 
@@ -81,6 +82,7 @@ struct arguments {
   bool sync;
   bool loop;
   bool relative;
+  char* rate;
   char* input;
 };
 
@@ -90,6 +92,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   case 's': arguments->sync = true; break;
   case 'l': arguments->loop = true; break;
   case 'r': arguments->relative = true; break;
+  case 'R': arguments->rate = arg; break;
   case ARGP_KEY_NO_ARGS:
     argp_usage (state);
   case ARGP_KEY_ARG:
@@ -217,7 +220,7 @@ char *itoa(long i, char* s, int dummy_radix) {
 
 void setup_jamming(){
   // zhitao: set rate = N * 500 kbps (e.g. 108 for 54 Mbps)
-  char* argv[]={"nexutil", "-s0x713", "-i", "-v", "12",NULL};
+  char* argv[]={"nexutil", "-s0x713", "-i", "-v", arguments.rate, NULL};
   exec_nexutil(argv);
 }
 
@@ -278,8 +281,12 @@ int main(int argc, char **argv)
   arguments.sync = false;
   arguments.loop = false;
   arguments.relative = false;
+  arguments.rate = "0";
 
-  argp_parse(&argp, argc, argv, 0, 0, &arguments);
+  error_t ret = argp_parse(&argp, argc, argv, 0, 0, &arguments);
+  if(ret != 0) {
+    perror("argp_parse() returns error");
+  }
 
   printf(">>>arguments ...\n");
 
@@ -287,7 +294,7 @@ int main(int argc, char **argv)
     printf("relative mode enabled\n");
   if(arguments.loop)
     printf("loop mode enabled\n");
-
+  printf("rate = %s\n", arguments.rate);
 
   // Set up gpi pointer for direct register access
   setup_io();
