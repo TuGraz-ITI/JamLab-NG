@@ -27,8 +27,6 @@ static char args_doc[] = "FILENAME";
 
 int mychannel=14;
 
-struct arguments arguments;
-
 int get_mychannel(){
   printf(">>>channel ...\n");
   struct ifaddrs *ifaddr, *ifa;
@@ -75,6 +73,10 @@ static struct argp_option options[] = {
   { "relative", 'r', NULL, 0, "Relative channel offset."},
   { "loop", 'l', NULL, 0, "Loops pattern at the end."},
   { "rate", 'R', "value", 0, "Rate in multiple of 500 kbps."},
+  { "power", 'p', "value", 0, "Tx power in mW"},
+  { "channel", 'c', "value", 0, "WiFi channel: 1-14"},
+  { "interval", 't', "value", 0, "Periodic interval in ms"},
+  { "length", 'L', "value", 0, "Frame length in bytes"},
   { 0 }
 };
 
@@ -83,7 +85,23 @@ struct arguments {
   bool loop;
   bool relative;
   char* rate;
+  char* power;
+  char* channel;
+  char* interval;
+  char* length;
   char* input;
+} ;
+
+struct arguments arguments = {
+  .input = NULL,
+  .sync = false,
+  .loop = false,
+  .relative = false,
+  .rate = "0",
+  .interval = NULL,
+  .channel = NULL,
+  .power = NULL,
+  .length = NULL,
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
@@ -93,8 +111,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   case 'l': arguments->loop = true; break;
   case 'r': arguments->relative = true; break;
   case 'R': arguments->rate = arg; break;
+  case 'p': arguments->power = arg; break;
+  case 'c': arguments->channel = arg; break;
+  case 't': arguments->interval = arg; break;
+  case 'L': arguments->length = arg; break;
   case ARGP_KEY_NO_ARGS:
-    argp_usage (state);
+    // zhitao: csv file command line argument is no longer mandatory
+    /* argp_usage (state); */
   case ARGP_KEY_ARG:
     //return 0;
     arguments->input = arg;
@@ -271,17 +294,13 @@ void term(int signum){
   stop_jamming();
   printf("exiting gracefully\n");
   terminate=true;
+  free(scenario);
   exit(-1);
 }
 
 int main(int argc, char **argv)
 {
   mychannel=get_mychannel();
-  arguments.input = NULL;
-  arguments.sync = false;
-  arguments.loop = false;
-  arguments.relative = false;
-  arguments.rate = "0";
 
   error_t ret = argp_parse(&argp, argc, argv, 0, 0, &arguments);
   if(ret != 0) {
@@ -295,6 +314,10 @@ int main(int argc, char **argv)
   if(arguments.loop)
     printf("loop mode enabled\n");
   printf("rate = %s\n", arguments.rate);
+  printf("channel = %s\n", arguments.channel);
+  printf("interval = %s\n", arguments.interval);
+  printf("power = %s\n", arguments.power);
+  printf("length = %s\n", arguments.length);
 
   // Set up gpi pointer for direct register access
   setup_io();
@@ -316,8 +339,35 @@ int main(int argc, char **argv)
   struct timespec ts,start;
   //clock_getres(clk_id, &res);
 
-  printf(">>>parsing ...\n");
-  parsefile(arguments.input);
+  if(arguments.input != NULL) {
+    printf(">>>parsing file...\n");
+    parsefile(arguments.input);
+  } else {
+    scenario = malloc(sizeof(jampattern_t));
+    scenario_count = 1;
+    scenario[0].ts = 0;
+    scenario[0].power = 10;
+    scenario[0].channel = 1;
+    scenario[0].periode = 5;
+    scenario[0].length = 1500;
+  }
+
+  // zhitao: overwrite jam pattern using cmdline options
+  if(scenario_count == 1) {
+    jampattern_t *p = &scenario[0];
+    if(arguments.power != NULL) {
+      p->power = atoi(arguments.power);
+    }
+    if(arguments.channel != NULL) {
+      p->channel = atoi(arguments.channel);
+    }
+    if(arguments.interval != NULL) {
+      p->periode = atoi(arguments.interval);
+    }
+    if(arguments.length != NULL) {
+      p->length = atoi(arguments.length);
+    }
+  }
   printpattern();
 
   int count=0;
