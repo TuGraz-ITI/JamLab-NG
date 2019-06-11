@@ -247,12 +247,19 @@ void setup_jamming(){
   exec_nexutil(argv);
 }
 
+void stop_jamming(){
+  char* argv[]={"nexutil","-s0x700",NULL};
+  exec_nexutil(argv);
+  free(scenario);
+}
+
+static bool terminate=false;
+
 void update_jamming(jampattern_t p){
   char buf[10];
 
   if(p.power==0){
-    char* argv2[]={"nexutil","-s0x700",NULL};
-    exec_nexutil(argv2);
+    terminate = true;
     return;
   }
   itoa(p.power,buf,10);
@@ -281,20 +288,12 @@ void update_jamming(jampattern_t p){
 
   char* argv5[]={"nexutil","-s0x701", "-i", "-v", buf,NULL};
   exec_nexutil(argv5);
-
 }
 
-void stop_jamming(){
-  char* argv[]={"nexutil","-s0x700",NULL};
-  exec_nexutil(argv);
-}
-
-bool terminate=false;
 void term(int signum){
   stop_jamming();
   printf("exiting gracefully\n");
   terminate=true;
-  free(scenario);
   exit(-1);
 }
 
@@ -417,6 +416,7 @@ int main(int argc, char **argv)
       }
     }
 
+  printf("Stopping.\n");
   stop_jamming();
 
   return 0;
