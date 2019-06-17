@@ -23,7 +23,7 @@
 
 
 static char doc[] = "JamlabNG pattern parser.";
-static char args_doc[] = "FILENAME";
+static char args_doc[] = "[FILENAME]";
 
 int mychannel=14;
 
@@ -116,7 +116,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   case 't': arguments->interval = arg; break;
   case 'L': arguments->length = arg; break;
   case ARGP_KEY_NO_ARGS:
-    // zhitao: csv file command line argument is no longer mandatory
+    // csv file command line argument is no longer mandatory
     /* argp_usage (state); */
   case ARGP_KEY_ARG:
     //return 0;
@@ -242,7 +242,7 @@ char *itoa(long i, char* s, int dummy_radix) {
 }
 
 void setup_jamming(){
-  // zhitao: set rate = N * 500 kbps (e.g. 108 for 54 Mbps)
+  // set rate = N * 500 kbps (e.g. 108 for 54 Mbps)
   char* argv[]={"nexutil", "-s0x713", "-i", "-v", arguments.rate, NULL};
   exec_nexutil(argv);
 }
@@ -282,8 +282,6 @@ void update_jamming(jampattern_t p){
   }
   itoa(channel,buf,10);
   char* argv4[]={"nexutil","-s0x702", "-i", "-v", buf,NULL};
-  // zhitao: 0x712 setting channel to 40 MHz does not have effect
-  /* char* argv4[]={"nexutil","-s0x712", "-i", "-v", buf,NULL}; */
   exec_nexutil(argv4);
 
   char* argv5[]={"nexutil","-s0x701", "-i", "-v", buf,NULL};
@@ -351,7 +349,7 @@ int main(int argc, char **argv)
     scenario[0].length = 1500;
   }
 
-  // zhitao: overwrite jam pattern using cmdline options
+  // overwrite jam pattern using cmdline options
   if(scenario_count == 1) {
     jampattern_t *p = &scenario[0];
     if(arguments.power != NULL) {
