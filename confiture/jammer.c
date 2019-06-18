@@ -36,33 +36,33 @@ int get_mychannel(){
     int ip[4];
 
     if (getifaddrs(&ifaddr) == -1)
-        {
-            perror("getifaddrs");
-            exit(EXIT_FAILURE);
-        }
+    {
+        perror("getifaddrs");
+        exit(EXIT_FAILURE);
+    }
 
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+
+        if((strstr(ifa->ifa_name,"enx")!=NULL)&&(ifa->ifa_addr->sa_family==AF_INET))
         {
-            if (ifa->ifa_addr == NULL)
-                continue;
-
-            s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-
-            if((strstr(ifa->ifa_name,"enx")!=NULL)&&(ifa->ifa_addr->sa_family==AF_INET))
-                {
-                    if (s != 0)
-                        {
-                            printf("getnameinfo() failed: %s\n", gai_strerror(s));
-                            exit(EXIT_FAILURE);
-                        }
-                    printf("Interface:\t<%s>\n",ifa->ifa_name );
-                    printf("Address:\t<%s>\n", host);
-                    sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
-                    ret=(ip[3]%14)+1;
-                    printf("Channel:\t<%d>\n",ret);
-                }
+            if (s != 0)
+            {
+                printf("getnameinfo() failed: %s\n", gai_strerror(s));
+                exit(EXIT_FAILURE);
+            }
+            printf("Interface:\t<%s>\n",ifa->ifa_name );
+            printf("Address:\t<%s>\n", host);
+            sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
+            ret=(ip[3]%14)+1;
+            printf("Channel:\t<%d>\n",ret);
         }
+    }
 
     freeifaddrs(ifaddr);
     return ret;
@@ -147,23 +147,23 @@ int parsefile(char* filename){
     scenario=malloc(sizeof(jampattern_t)); //alloc one line
     scenario_count=0;
     if ( file != NULL )
+    {
+        char line [ 1024 ]; /* or other suitable maximum line size */
+        while ( fgets ( line, sizeof line, file ) != NULL ) /* read a line */
         {
-            char line [ 1024 ]; /* or other suitable maximum line size */
-            while ( fgets ( line, sizeof line, file ) != NULL ) /* read a line */
-                {
-                    if(strlen(line) > 1) {
-                        sscanf(line,"%llu, %d, %d, %d, %d\n", &scenario[scenario_count].ts, &scenario[scenario_count].channel, &scenario[scenario_count].power, &scenario[scenario_count].periode, & scenario[scenario_count].length);
-                        scenario_count++;
-                        scenario=realloc(scenario,(1+scenario_count)*sizeof(jampattern_t));
-                    }
-                }
-            fclose ( file );
+            if(strlen(line) > 1) {
+                sscanf(line,"%llu, %d, %d, %d, %d\n", &scenario[scenario_count].ts, &scenario[scenario_count].channel, &scenario[scenario_count].power, &scenario[scenario_count].periode, & scenario[scenario_count].length);
+                scenario_count++;
+                scenario=realloc(scenario,(1+scenario_count)*sizeof(jampattern_t));
+            }
         }
+        fclose ( file );
+    }
     else
-        {
-            printf("File does not exit!\n");
-            exit(-1);
-        }
+    {
+        printf("File does not exit!\n");
+        exit(-1);
+    }
     return 0;
 }
 
@@ -380,39 +380,39 @@ int main(int argc, char **argv)
     printf(">>>starting ...\n");
     clock_gettime(clk_id, &start);
     while(!terminate)
-        {
-            ts.tv_sec=start.tv_sec;
-            ts.tv_nsec=start.tv_nsec;
+    {
+        ts.tv_sec=start.tv_sec;
+        ts.tv_nsec=start.tv_nsec;
 
-            jampattern_t scen=scenario[count++];
-            //clock_gettime(clk_id,&ts);
-            uint64_t interval=scen.ts;
-            while(interval > NANO) {
-                ts.tv_sec++;
-                interval -=NANO;
+        jampattern_t scen=scenario[count++];
+        //clock_gettime(clk_id,&ts);
+        uint64_t interval=scen.ts;
+        while(interval > NANO) {
+            ts.tv_sec++;
+            interval -=NANO;
+        }
+        ts.tv_nsec += interval;
+        while (ts.tv_nsec >= NANO) {
+            ts.tv_nsec -= NANO;
+            ts.tv_sec++;
+        }
+        clock_nanosleep(clk_id, TIMER_ABSTIME, &ts, NULL);
+
+        update_jamming(scen);
+
+        if(count==scenario_count){
+            //break;
+            if(arguments.loop && scenario_count!=1){
+                printf("pattern finished, restart from the begining...\n");
+                count=0;
+                clock_gettime(clk_id, &start);
             }
-            ts.tv_nsec += interval;
-            while (ts.tv_nsec >= NANO) {
-                ts.tv_nsec -= NANO;
-                ts.tv_sec++;
-            }
-            clock_nanosleep(clk_id, TIMER_ABSTIME, &ts, NULL);
-
-            update_jamming(scen);
-
-            if(count==scenario_count){
-                //break;
-                if(arguments.loop && scenario_count!=1){
-                    printf("pattern finished, restart from the begining...\n");
-                    count=0;
-                    clock_gettime(clk_id, &start);
-                }
-                else{
-                    printf("pattern finished, looping forever...\n");
-                    while(!terminate){sleep(1);}
-                }
+            else{
+                printf("pattern finished, looping forever...\n");
+                while(!terminate){sleep(1);}
             }
         }
+    }
 
     printf("Stopping.\n");
     stop_jamming();
@@ -435,13 +435,13 @@ void setup_io()
 
     /* mmap GPIO */
     gpio_map = mmap(
-                    NULL,             //Any adddress in our space will do
-                    BLOCK_SIZE,       //Map length
-                    PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
-                    MAP_SHARED,       //Shared with other processes
-                    mem_fd,           //File to map
-                    GPIO_BASE         //Offset to GPIO peripheral
-                    );
+        NULL,             //Any adddress in our space will do
+        BLOCK_SIZE,       //Map length
+        PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
+        MAP_SHARED,       //Shared with other processes
+        mem_fd,           //File to map
+        GPIO_BASE         //Offset to GPIO peripheral
+        );
 
     close(mem_fd); //No need to keep mem_fd open after mmap
 
