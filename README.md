@@ -2,7 +2,7 @@
 
 JamLab-NG is a tool for evaluating the performance of low-power wireless networking protocols in noisy RF environments. It enables the generation of repeatable and reproducible Wi-Fi interference using off-the-shelf Raspberry Pi3 devices.
 
-JamLab-NG is the result of a cooperation between TU Graz and TU Darmstadt, and has been published at EWSN 2019 ([PDF](http://www.carloalbertoboano.com/documents/schuss19jamlab-ng.pdf)). It was also used in conjunction with D-Cube ([PDF](http://www.carloalbertoboano.com/documents/boano17competition.pdf) and [PDF](http://www.carloalbertoboano.com/documents/schuss18benchmark.pdf)) to set-up the EWSN 2019 dependability competition ([link](https://iti-testbed.tugraz.at/blog/tag/ewsn2019])).
+JamLab-NG is the result of a cooperation between TU Graz and TU Darmstadt, and has been published at EWSN 2019 ([PDF](http://www.carloalbertoboano.com/documents/schuss19jamlabng.pdf)). It was also used in conjunction with D-Cube ([PDF](http://www.carloalbertoboano.com/documents/boano17competition.pdf) and [PDF](http://www.carloalbertoboano.com/documents/schuss18benchmark.pdf)) to set-up the EWSN 2019 dependability competition ([link](https://iti-testbed.tugraz.at/blog/tag/ewsn2019])).
 
 This repository currently contains the parts required to build confiture and can be used with Scapy as is. Jelly is tested against the Rasperry Pi with JamLab-NG's confiture to support sending without CCA, using arbitrary channels, and varying transmission power.
 
