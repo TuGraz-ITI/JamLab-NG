@@ -6,7 +6,11 @@ JamLab-NG is the result of a cooperation between TU Graz and TU Darmstadt, and h
 
 This repository currently contains the parts required to build confiture and can be used with Scapy as is. Jelly is tested against the Rasperry Pi with JamLab-NG's confiture to support sending without CCA, using arbitrary channels, and varying transmission power.
 
-## Preliminary Instructions
+## Instructions
+
+A step by step [guide](https://github.com/CloudyPadmal/nexmon/wiki/Installation-Guide---JamLab-ng) is available to set up a Raspberry Pi to run JamLab-NG using a more recent kernel 5.4 and newer nexmon base. 
+
+### Old Instructions
 
 JamLab-NG's confiture relies on [nexmon](https://github.com/seemoo-lab/nexmon) to work on the Raspberry Pi. To get started follow the [guide](https://github.com/seemoo-lab/nexmon#build-patches-for-bcm43430a1-on-the-rpi3zero-w-or-bcm434355c0-on-the-rpi3-using-raspbian-recommended).
 
