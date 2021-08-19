@@ -23,11 +23,9 @@
 
 
 static char doc[] = "JamlabNG pattern parser.";
-static char args_doc[] = "FILENAME";
+static char args_doc[] = "[FILENAME]";
 
 int mychannel=14;
-
-struct arguments arguments;
 
 int get_mychannel(){
     printf(">>>channel ...\n");
@@ -37,17 +35,17 @@ int get_mychannel(){
     int ret=14;
     int ip[4];
 
-    if (getifaddrs(&ifaddr) == -1) 
+    if (getifaddrs(&ifaddr) == -1)
     {
         perror("getifaddrs");
         exit(EXIT_FAILURE);
     }
 
 
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) 
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
     {
         if (ifa->ifa_addr == NULL)
-            continue;  
+            continue;
 
         s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
@@ -59,10 +57,10 @@ int get_mychannel(){
                 exit(EXIT_FAILURE);
             }
             printf("Interface:\t<%s>\n",ifa->ifa_name );
-            printf("Address:\t<%s>\n", host); 
-	    sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
-	    ret=(ip[3]%14)+1;
-	    printf("Channel:\t<%d>\n",ret);
+            printf("Address:\t<%s>\n", host);
+            sscanf(host,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
+            ret=(ip[3]%14)+1;
+            printf("Channel:\t<%d>\n",ret);
         }
     }
 
@@ -70,36 +68,64 @@ int get_mychannel(){
     return ret;
 }
 
-static struct argp_option options[] = { 
+static struct argp_option options[] = {
     { "sync", 's', NULL, 0, "Enable synchronisation to the node reset."},
     { "relative", 'r', NULL, 0, "Relative channel offset."},
     { "loop", 'l', NULL, 0, "Loops pattern at the end."},
-    { 0 } 
+    { "rate", 'R', "value", 0, "Rate in multiple of 500 kbps."},
+    { "power", 'p', "value", 0, "Tx power in mW"},
+    { "channel", 'c', "value", 0, "WiFi channel: 1-14"},
+    { "interval", 't', "value", 0, "Periodic interval in ms"},
+    { "length", 'L', "value", 0, "Frame length in bytes"},
+    { 0 }
 };
 
 struct arguments {
     bool sync;
     bool loop;
     bool relative;
+    char* rate;
+    char* power;
+    char* channel;
+    char* interval;
+    char* length;
     char* input;
+} ;
+
+struct arguments arguments = {
+    .input = NULL,
+    .sync = false,
+    .loop = false,
+    .relative = false,
+    .rate = "0",
+    .interval = NULL,
+    .channel = NULL,
+    .power = NULL,
+    .length = NULL,
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     struct arguments *arguments = state->input;
     switch (key) {
-        case 's': arguments->sync = true; break;
-        case 'l': arguments->loop = true; break;
-        case 'r': arguments->relative = true; break;
-        case ARGP_KEY_NO_ARGS:
-                  argp_usage (state);
-        case ARGP_KEY_ARG: 
-                  //return 0;
-                  arguments->input = arg;
-                  //arguments->strings = &state->argv[state->next];
-                  state->next = state->argc;
-                  break;
-        default: return ARGP_ERR_UNKNOWN;
-    }   
+    case 's': arguments->sync = true; break;
+    case 'l': arguments->loop = true; break;
+    case 'r': arguments->relative = true; break;
+    case 'R': arguments->rate = arg; break;
+    case 'p': arguments->power = arg; break;
+    case 'c': arguments->channel = arg; break;
+    case 't': arguments->interval = arg; break;
+    case 'L': arguments->length = arg; break;
+    case ARGP_KEY_NO_ARGS:
+        // csv file command line argument is no longer mandatory
+        /* argp_usage (state); */
+    case ARGP_KEY_ARG:
+        //return 0;
+        arguments->input = arg;
+        //arguments->strings = &state->argv[state->next];
+        state->next = state->argc;
+        break;
+    default: return ARGP_ERR_UNKNOWN;
+    }
     return 0;
 }
 
@@ -199,68 +225,69 @@ int timespec2str(char *buf, uint len, struct timespec *ts) {
 void exec_nexutil(char** argv){
     pid_t pid=fork();
     if(pid==0){
-        int fd=open( "/dev/null", O_WRONLY ); 
-	dup2(fd,1);
-	dup2(fd,2);
+        int fd=open( "/dev/null", O_WRONLY );
+        dup2(fd,1);
+        dup2(fd,2);
         execv("/usr/bin/nexutil",argv);
-	exit(-1);
+        exit(-1);
     } else {
         waitpid(pid,0,0);
     }
-    return; 
+    return;
 }
 
 char *itoa(long i, char* s, int dummy_radix) {
-	    sprintf(s, "%ld", i);
-	        return s;
+    sprintf(s, "%ld", i);
+    return s;
 }
 
 void setup_jamming(){
-    char* argv[]={"nexutil", "-s0x713", "-i", "-v", "0",NULL};
+    // set rate = N * 500 kbps (e.g. 108 for 54 Mbps)
+    char* argv[]={"nexutil", "-s0x713", "-i", "-v", arguments.rate, NULL};
     exec_nexutil(argv);
 }
+
+void stop_jamming(){
+    char* argv[]={"nexutil","-s0x700",NULL};
+    exec_nexutil(argv);
+    free(scenario);
+}
+
+static bool terminate=false;
 
 void update_jamming(jampattern_t p){
     char buf[10];
 
     if(p.power==0){
-        char* argv2[]={"nexutil","-s0x700",NULL};
-        exec_nexutil(argv2);
-	return;
+        terminate = true;
+        return;
     }
-    itoa(p.power,buf,10);	    
+    itoa(p.power,buf,10);
     char* argv2[]={"nexutil","-s0x704", "-i", "-v", buf,NULL};
     exec_nexutil(argv2);
 
-    itoa(p.periode,buf,10);	    
+    itoa(p.periode,buf,10);
     char* argv1[]={"nexutil","-s0x706", "-i", "-v", buf,NULL};
     exec_nexutil(argv1);
 
-    itoa(p.length,buf,10);	    
+    itoa(p.length,buf,10);
     char* argv3[]={"nexutil","-s0x707", "-i", "-v", buf,NULL};
     exec_nexutil(argv3);
 
     int channel=p.channel;
     if(arguments.relative || channel==0){
         channel+=mychannel;
-	if(channel>14)
-		channel=(channel%14)+1;
+        if(channel>14)
+            channel=(channel%14)+1;
     }
-    itoa(channel,buf,10); 
+    itoa(channel,buf,10);
     char* argv4[]={"nexutil","-s0x702", "-i", "-v", buf,NULL};
     exec_nexutil(argv4);
 
     char* argv5[]={"nexutil","-s0x701", "-i", "-v", buf,NULL};
     exec_nexutil(argv5);
-
 }
 
-void stop_jamming(){
-    char* argv[]={"nexutil","-s0x700",NULL};
-    exec_nexutil(argv);
-}
-
-bool terminate=false;
 void term(int signum){
     stop_jamming();
     printf("exiting gracefully\n");
@@ -271,12 +298,11 @@ void term(int signum){
 int main(int argc, char **argv)
 {
     mychannel=get_mychannel();
-    arguments.input = NULL;
-    arguments.sync = false;
-    arguments.loop = false;
-    arguments.relative = false;
 
-    argp_parse(&argp, argc, argv, 0, 0, &arguments);
+    error_t ret = argp_parse(&argp, argc, argv, 0, 0, &arguments);
+    if(ret != 0) {
+        perror("argp_parse() returns error");
+    }
 
     printf(">>>arguments ...\n");
 
@@ -284,11 +310,15 @@ int main(int argc, char **argv)
         printf("relative mode enabled\n");
     if(arguments.loop)
         printf("loop mode enabled\n");
-
+    printf("rate = %s\n", arguments.rate);
+    printf("channel = %s\n", arguments.channel);
+    printf("interval = %s\n", arguments.interval);
+    printf("power = %s\n", arguments.power);
+    printf("length = %s\n", arguments.length);
 
     // Set up gpi pointer for direct register access
     setup_io();
-    
+
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = term;
@@ -306,8 +336,35 @@ int main(int argc, char **argv)
     struct timespec ts,start;
     //clock_getres(clk_id, &res);
 
-    printf(">>>parsing ...\n");
-    parsefile(arguments.input);
+    if(arguments.input != NULL) {
+        printf(">>>parsing file...\n");
+        parsefile(arguments.input);
+    } else {
+        scenario = malloc(sizeof(jampattern_t));
+        scenario_count = 1;
+        scenario[0].ts = 0;
+        scenario[0].power = 10;
+        scenario[0].channel = 1;
+        scenario[0].periode = 5;
+        scenario[0].length = 1500;
+    }
+
+    // overwrite jam pattern using cmdline options
+    if(scenario_count == 1) {
+        jampattern_t *p = &scenario[0];
+        if(arguments.power != NULL) {
+            p->power = atoi(arguments.power);
+        }
+        if(arguments.channel != NULL) {
+            p->channel = atoi(arguments.channel);
+        }
+        if(arguments.interval != NULL) {
+            p->periode = atoi(arguments.interval);
+        }
+        if(arguments.length != NULL) {
+            p->length = atoi(arguments.length);
+        }
+    }
     printpattern();
 
     int count=0;
@@ -324,16 +381,16 @@ int main(int argc, char **argv)
     clock_gettime(clk_id, &start);
     while(!terminate)
     {
-	ts.tv_sec=start.tv_sec;
-	ts.tv_nsec=start.tv_nsec;
+        ts.tv_sec=start.tv_sec;
+        ts.tv_nsec=start.tv_nsec;
 
-	jampattern_t scen=scenario[count++];
+        jampattern_t scen=scenario[count++];
         //clock_gettime(clk_id,&ts);
-	uint64_t interval=scen.ts;
-	while(interval > NANO) {
-		ts.tv_sec++;
-		interval -=NANO;
-	}
+        uint64_t interval=scen.ts;
+        while(interval > NANO) {
+            ts.tv_sec++;
+            interval -=NANO;
+        }
         ts.tv_nsec += interval;
         while (ts.tv_nsec >= NANO) {
             ts.tv_nsec -= NANO;
@@ -341,22 +398,23 @@ int main(int argc, char **argv)
         }
         clock_nanosleep(clk_id, TIMER_ABSTIME, &ts, NULL);
 
-	update_jamming(scen);
+        update_jamming(scen);
 
-	if(count==scenario_count){
-//		break;
-            if(arguments.loop && scenario_count!=1){		
-		printf("pattern finished, restart from the begining...\n");
+        if(count==scenario_count){
+            //break;
+            if(arguments.loop && scenario_count!=1){
+                printf("pattern finished, restart from the begining...\n");
                 count=0;
                 clock_gettime(clk_id, &start);
-	    }
-	    else{
-		printf("pattern finished, looping forever...\n");
+            }
+            else{
+                printf("pattern finished, looping forever...\n");
                 while(!terminate){sleep(1);}
-	    }		
-	}
+            }
+        }
     }
 
+    printf("Stopping.\n");
     stop_jamming();
 
     return 0;
@@ -377,13 +435,13 @@ void setup_io()
 
     /* mmap GPIO */
     gpio_map = mmap(
-            NULL,             //Any adddress in our space will do
-            BLOCK_SIZE,       //Map length
-            PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
-            MAP_SHARED,       //Shared with other processes
-            mem_fd,           //File to map
-            GPIO_BASE         //Offset to GPIO peripheral
-            );
+        NULL,             //Any adddress in our space will do
+        BLOCK_SIZE,       //Map length
+        PROT_READ|PROT_WRITE,// Enable reading & writting to mapped memory
+        MAP_SHARED,       //Shared with other processes
+        mem_fd,           //File to map
+        GPIO_BASE         //Offset to GPIO peripheral
+        );
 
     close(mem_fd); //No need to keep mem_fd open after mmap
 
